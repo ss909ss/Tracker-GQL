@@ -8,7 +8,7 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import dotenv from 'dotenv'
-
+import path from "path";
 import passport from "passport";
 import session from "express-session";
 import connectMongo from 'connect-mongodb-session';
@@ -17,12 +17,15 @@ dotenv.config();
 
 const app = express();
 
+const __dirname = path.resolve();
+
 
 import mergedResolvers from "./resolvers/index.js";
 import mergedTypeDefs from "./typeDefs/index.js";
 
 import { connectDB } from "./db/connectDB.js";
 import { configurePassport } from "./passport/passport.config.js";
+
 
 configurePassport();
 
@@ -73,6 +76,12 @@ app.use(
         context: async ({req,res}) => buildContext({ req,res }),
     }),
 );
+
+app.use(express.static(path.join(__dirname,"frontend/dist")));
+
+app.get("*",(req,res) => {
+    res.sendFile(path.join(__dirname,"frontend/dist","index.html"));
+})
 
 await new Promise((resolve) => httpServer.listen({port:4000},resolve));
 await connectDB();
